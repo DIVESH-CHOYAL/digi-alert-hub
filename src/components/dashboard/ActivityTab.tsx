@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, AlertTriangle, 
+         ShieldCheck, AlertCircle } from "lucide-react";
 
 type Event = {
   id: number;
@@ -12,36 +13,128 @@ type Event = {
   action: string;
 };
 
-const makeDetails = (text: string) => ({
-  details: `Incident "${text}" was detected by the SHIELD AI monitoring engine. Automated analysis identified the threat vector and correlated it with known attack patterns from the last 72 hours.`,
-  systems: "API Gateway, User Database, Auth Service",
-  action: "Enable rate limiting immediately and review access logs",
-});
-
 const initialEvents: Event[] = [
-  { id: 1, text: "Suspicious login detected — Mumbai", level: "critical", time: "14:32:01", ...makeDetails("Suspicious login detected — Mumbai") },
-  { id: 2, text: "Mass data export blocked — US East", level: "critical", time: "14:31:45", ...makeDetails("Mass data export blocked — US East") },
-  { id: 3, text: "API rate limit exceeded — 4.2M calls", level: "warning", time: "14:31:22", ...makeDetails("API rate limit exceeded — 4.2M calls") },
-  { id: 4, text: "Brute force attempt mitigated", level: "resolved", time: "14:30:58", ...makeDetails("Brute force attempt mitigated") },
-  { id: 5, text: "New TLS certificate deployed", level: "resolved", time: "14:30:30", ...makeDetails("New TLS certificate deployed") },
-  { id: 6, text: "Anomalous traffic spike — SEA region", level: "warning", time: "14:29:55", ...makeDetails("Anomalous traffic spike — SEA region") },
-  { id: 7, text: "Credential stuffing detected — EU proxy", level: "critical", time: "14:29:12", ...makeDetails("Credential stuffing detected — EU proxy") },
-  { id: 8, text: "WAF rule updated — XSS patterns", level: "resolved", time: "14:28:44", ...makeDetails("WAF rule updated — XSS patterns") },
-  { id: 9, text: "DDoS mitigation activated — Layer 7", level: "warning", time: "14:28:01", ...makeDetails("DDoS mitigation activated — Layer 7") },
-  { id: 10, text: "Unauthorized API key usage blocked", level: "critical", time: "14:27:33", ...makeDetails("Unauthorized API key usage blocked") },
+  {
+    id: 1, level: "critical",
+    text: "Suspicious login detected — Mumbai, India",
+    time: "2 min ago",
+    details: "User ID 449821 logged in from an unrecognized device in Mumbai. Previous login was from Chennai 2 hours ago. Velocity check triggered — impossible travel detected.",
+    systems: "Auth Server, User Database, Session Manager",
+    action: "Force logout all sessions and send 2FA verification email immediately.",
+  },
+  {
+    id: 2, level: "critical",
+    text: "Mass data export attempt blocked — 500K records",
+    time: "5 min ago",
+    details: "An automated script attempted to export 500,000 user profile records via the admin API. Request was rate-limited after 12,000 records. IP flagged as malicious.",
+    systems: "API Gateway, Admin Panel, Rate Limiter",
+    action: "Revoke API key, block IP range 185.220.x.x and audit all admin API access logs.",
+  },
+  {
+    id: 3, level: "warning",
+    text: "API rate limit exceeded — 4.2M calls in 10 min",
+    time: "8 min ago",
+    details: "A single API key made 4.2 million calls in 10 minutes, exceeding the 10,000/hour limit by 420x. Behavioral pattern matches known scraping bot signatures.",
+    systems: "Public API, CDN, Load Balancer",
+    action: "Revoke the API key and implement stricter per-key rate limiting with CAPTCHA challenge.",
+  },
+  {
+    id: 4, level: "warning",
+    text: "New device login — Lagos, Nigeria",
+    time: "12 min ago",
+    details: "User account accessed from a new geographic location for the first time. Account has no prior activity from West Africa. Risk score elevated to 78/100.",
+    systems: "Authentication Service, Geo-IP Module",
+    action: "Send 2FA challenge to registered email and notify user of suspicious activity.",
+  },
+  {
+    id: 5, level: "critical",
+    text: "Bot network detected — 1,240 fake accounts",
+    time: "15 min ago",
+    details: "ML model identified 1,240 accounts as coordinated bots based on posting patterns, login timing, and content similarity scores above 94%. Network spreading misinformation.",
+    systems: "ML Detection Engine, Content Moderation, User Service",
+    action: "Suspend all flagged accounts pending manual review. Retrain detection model with new patterns.",
+  },
+  {
+    id: 6, level: "resolved",
+    text: "AES-256 encryption key rotation completed",
+    time: "22 min ago",
+    details: "Scheduled quarterly encryption key rotation completed successfully across all Big Data pipelines. New keys distributed to all microservices. Zero downtime achieved.",
+    systems: "Key Management Service, Data Pipelines, Microservices",
+    action: "No action needed — archive rotation certificate and schedule next rotation in 90 days.",
+  },
+  {
+    id: 7, level: "warning",
+    text: "Unusual data access pattern — User ID 449821",
+    time: "31 min ago",
+    details: "User accessed 3,400 profiles in 5 minutes — 50x above normal browsing behavior. Access pattern consistent with data harvesting. No export attempted yet.",
+    systems: "Analytics Engine, User Database, Access Logger",
+    action: "Throttle user access to 10 profile views/minute and flag account for security review.",
+  },
+  {
+    id: 8, level: "critical",
+    text: "DDoS attack mitigated — 2.1 Gbps volumetric",
+    time: "45 min ago",
+    details: "Volumetric DDoS attack from 8,000 distributed IPs targeting the login endpoint. Peak traffic: 2.1 Gbps. Cloudflare mitigation activated automatically within 34 seconds.",
+    systems: "CDN, Load Balancer, Firewall, Login Service",
+    action: "Review firewall rules and update IP blocklist. Monitor for follow-up layer 7 attack.",
+  },
+  {
+    id: 9, level: "resolved",
+    text: "GDPR compliance audit passed — Q1 2026",
+    time: "1 hr ago",
+    details: "Quarterly GDPR compliance audit completed by external auditor. All 47 data handling procedures met regulatory requirements. Two minor recommendations noted for next quarter.",
+    systems: "Data Governance Module, Privacy Engine",
+    action: "Archive audit report and implement 2 minor recommendations by next quarter.",
+  },
+  {
+    id: 10, level: "resolved",
+    text: "Zero-day patch deployed — CVE-2026-1042",
+    time: "2 hr ago",
+    details: "Critical patch for CVE-2026-1042 deployed across all 34 backend servers. Vulnerability allowed privilege escalation via malformed JWT token. No exploitation detected before patch.",
+    systems: "All Backend Services, JWT Auth Module",
+    action: "Monitor for exploitation attempts over next 48 hours. Confirm patch on all nodes.",
+  },
 ];
 
 const newEventTexts = [
-  "Phishing campaign detected — EMEA",
-  "Malware signature updated — v4.2.1",
-  "Geo-blocked access attempt — CN",
-  "Session hijacking prevented",
-  "Privilege escalation attempt — Admin panel",
-  "DNS tunneling detected",
-  "Zero-day exploit scan initiated",
+  { text: "Phishing campaign targeting DIGI ALERT users — EMEA", level: "critical" as const,
+    details: "Fake DIGI ALERT login pages deployed across 12 domains targeting European users via SMS phishing.", systems: "Email Gateway, DNS, User Auth", action: "Issue platform alert and initiate domain takedown requests." },
+  { text: "Malware signature database updated — v4.2.1", level: "resolved" as const,
+    details: "SHIELD AI threat database updated with 847 new malware signatures from latest threat intelligence feed.", systems: "Threat Intelligence Module", action: "No action needed — automatic update successful." },
+  { text: "Geo-blocked access attempt — North Korea", level: "warning" as const,
+    details: "403 access attempts from North Korean IP ranges blocked by geo-restriction policy in last 10 minutes.", systems: "Geo-IP Firewall, Access Control", action: "Review geo-block policy and update regional rules." },
+  { text: "Privilege escalation attempt — Admin panel", level: "critical" as const,
+    details: "Attacker attempted to escalate from user to admin role using known JWT manipulation technique CVE-2025-8821.", systems: "Admin Panel, JWT Service, RBAC Module", action: "Patch JWT validation immediately and audit all admin sessions." },
+  { text: "DNS tunneling detected — outbound traffic", level: "warning" as const,
+    details: "Unusual DNS query patterns detected from internal server. Possible data exfiltration via DNS tunneling protocol.", systems: "DNS Resolver, Network Monitor", action: "Block suspicious DNS queries and isolate affected server." },
 ];
 
-const levelColor = { critical: "bg-destructive", warning: "bg-yellow-500", resolved: "bg-green-500" };
+const levelConfig = {
+  critical: {
+    dot: "bg-red-500",
+    glow: "shadow-red-500/30",
+    icon: AlertTriangle,
+    iconColor: "text-red-400",
+    badge: "bg-red-500/20 text-red-400",
+    border: "border-red-500/30",
+  },
+  warning: {
+    dot: "bg-yellow-500",
+    glow: "shadow-yellow-500/30",
+    icon: AlertCircle,
+    iconColor: "text-yellow-400",
+    badge: "bg-yellow-500/20 text-yellow-400",
+    border: "border-yellow-500/30",
+  },
+  resolved: {
+    dot: "bg-green-500",
+    glow: "shadow-green-500/30",
+    icon: ShieldCheck,
+    iconColor: "text-green-400",
+    badge: "bg-green-500/20 text-green-400",
+    border: "border-green-500/30",
+  },
+};
 
 const ActivityTab = () => {
   const [events, setEvents] = useState<Event[]>(initialEvents);
@@ -50,66 +143,133 @@ const ActivityTab = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(11);
 
+  // Auto-generate new events
   useEffect(() => {
     const interval = setInterval(() => {
-      const text = newEventTexts[Math.floor(Math.random() * newEventTexts.length)];
-      const levels: Event["level"][] = ["critical", "warning", "resolved"];
-      const level = levels[Math.floor(Math.random() * 3)];
+      const template = newEventTexts[Math.floor(Math.random() * newEventTexts.length)];
       const now = new Date();
-      const time = now.toLocaleTimeString("en-US", { hour12: false });
-      setEvents((prev) => [{ id: nextId.current++, text, level, time, ...makeDetails(text) }, ...prev].slice(0, 30));
-    }, 4000);
+      const time = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")} UTC`;
+      setEvents((prev) => [{
+        id: nextId.current++,
+        text: template.text,
+        level: template.level,
+        time: "just now",
+        details: template.details,
+        systems: template.systems,
+        action: template.action,
+      }, ...prev].slice(0, 30));
+    }, 6000);
     return () => clearInterval(interval);
   }, []);
 
+  // Scroll to top on new event
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0;
-  }, [events]);
+  }, [events.length]);
 
   return (
-    <div ref={scrollRef} className="space-y-1 max-h-[calc(100vh-200px)] overflow-y-auto pr-1">
-      {events.map((e) => (
-        <div key={e.id}>
-          <button
-            onClick={() => setExpanded(expanded === e.id ? null : e.id)}
-            className="w-full flex items-start gap-2 p-2 rounded-md bg-card glow-border text-xs text-left hover:bg-muted/20 transition-colors animate-fade-in"
-          >
-            <span className={`w-2 h-2 rounded-full mt-1 shrink-0 ${levelColor[e.level]}`} />
-            <div className="flex-1">
-              <p className="text-foreground">{e.text}</p>
-              <p className="text-muted-foreground text-[10px] mt-0.5">{e.time} UTC</p>
-            </div>
-            {expanded === e.id ? (
-              <ChevronDown className="w-3 h-3 text-muted-foreground mt-0.5 shrink-0" />
-            ) : (
-              <ChevronRight className="w-3 h-3 text-muted-foreground mt-0.5 shrink-0" />
-            )}
-          </button>
-          {expanded === e.id && (
-            <div className="ml-4 p-2 bg-muted/10 border-l-2 border-primary/30 rounded-b-md text-[11px] space-y-1.5 animate-fade-in">
-              <p className="text-muted-foreground">{e.details}</p>
-              <p className="text-muted-foreground"><span className="text-foreground font-medium">Affected:</span> {e.systems}</p>
-              <p className="text-muted-foreground"><span className="text-foreground font-medium">Action:</span> {e.action}</p>
-              <div className="flex gap-2 mt-1">
-                <Button
-                  size="sm"
-                  className="h-6 text-[10px] bg-green-600 hover:bg-green-700 text-foreground"
-                  disabled={resolved.has(e.id)}
-                  onClick={(ev) => {
-                    ev.stopPropagation();
-                    setResolved((prev) => new Set(prev).add(e.id));
-                  }}
-                >
-                  {resolved.has(e.id) ? "✓ Resolved" : "Mark as Resolved"}
-                </Button>
-                <Button size="sm" className="h-6 text-[10px] bg-destructive hover:bg-destructive/80 text-destructive-foreground">
-                  Escalate
-                </Button>
+    <div
+      ref={scrollRef}
+      className="space-y-1.5 max-h-[calc(100vh-200px)] overflow-y-auto pr-1"
+      style={{ scrollbarWidth: "thin", scrollbarColor: "#ff2d78 #111" }}
+    >
+      {events.map((e) => {
+        const cfg = levelConfig[e.level];
+        const Icon = cfg.icon;
+        const isExpanded = expanded === e.id;
+        const isResolved = resolved.has(e.id);
+
+        return (
+          <div key={e.id} className="animate-fade-in">
+            {/* Main row */}
+            <button
+              onClick={() => setExpanded(isExpanded ? null : e.id)}
+              className={`w-full flex items-start gap-2.5 p-2.5 rounded-t-md text-xs text-left transition-all
+                ${isExpanded
+                  ? `bg-card border border-b-0 ${cfg.border}`
+                  : "bg-card/60 border border-transparent hover:border-border hover:bg-card"
+                }`}
+            >
+              {/* Colored dot */}
+              <div className="mt-0.5 shrink-0 flex flex-col items-center gap-0.5">
+                <span className={`w-2 h-2 rounded-full ${isResolved ? "bg-green-500" : cfg.dot} shadow-sm ${cfg.glow}`} />
               </div>
-            </div>
-          )}
-        </div>
-      ))}
+
+              {/* Text content */}
+              <div className="flex-1 min-w-0">
+                <p className={`font-medium truncate ${isResolved ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                  {e.text}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-muted-foreground text-[10px]">{e.time}</span>
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide ${isResolved ? "bg-green-500/20 text-green-400" : cfg.badge}`}>
+                    {isResolved ? "resolved" : e.level}
+                  </span>
+                </div>
+              </div>
+
+              {/* Chevron */}
+              {isExpanded
+                ? <ChevronDown className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
+              }
+            </button>
+
+            {/* Expanded details */}
+            {isExpanded && (
+              <div className={`border border-t-0 ${cfg.border} rounded-b-md bg-card/40 p-3 space-y-2.5`}>
+
+                {/* Details */}
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  {e.details}
+                </p>
+
+                {/* Systems */}
+                <div className="flex gap-1.5 items-start">
+                  <Icon className={`w-3 h-3 mt-0.5 shrink-0 ${cfg.iconColor}`} />
+                  <div>
+                    <span className="text-[10px] font-semibold text-foreground">Affected Systems: </span>
+                    <span className="text-[10px] text-muted-foreground">{e.systems}</span>
+                  </div>
+                </div>
+
+                {/* Recommended action */}
+                <div className={`rounded p-2 border ${cfg.border} bg-card/60`}>
+                  <p className="text-[10px] font-semibold text-primary mb-0.5">
+                    ⚡ Recommended Action
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    {e.action}
+                  </p>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex gap-2 pt-0.5">
+                  <Button
+                    size="sm"
+                    className="h-6 text-[10px] bg-green-600 hover:bg-green-700 text-white flex-1"
+                    disabled={isResolved}
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      setResolved((prev) => new Set(prev).add(e.id));
+                      setExpanded(null);
+                    }}
+                  >
+                    {isResolved ? "✓ Resolved" : "Mark as Resolved"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="h-6 text-[10px] bg-destructive hover:bg-destructive/80 text-white flex-1"
+                    onClick={(ev) => ev.stopPropagation()}
+                  >
+                    ⚠ Escalate
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };
