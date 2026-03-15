@@ -66,14 +66,3 @@ const DashboardHeader = () => {
 };
 
 export default DashboardHeader;
-```
-
----
-
-## 💾 How to Save in github.dev:
-```
-1. Select ALL existing code → Ctrl+A
-2. Delete it
-3. Paste the new code → Ctrl+V
-4. Save → Ctrl+S
-5. Changes auto-sync to Lovable! ✅
